@@ -1,0 +1,65 @@
+---
+- name: Sample
+  hosts: localhost
+  tasks:
+
+
+- name: create a VPC with dedicated tenancy and a couple of tags
+  ec2_vpc_net:
+    name: Ansible_VPC
+    cidr_block: 10.20.0.0/16
+    region: ap-south-1
+    tags:
+      module: ec2_vpc_net
+      this: works
+    tenancy: default
+
+- name: associate subnet to the VPC
+  ec2_vpc_subnet:
+   state: present
+   vpc_id: "{{ vpc_id }}"
+   region: "{{ region }}"
+   cidr: "{{ subnet_cidr }}"
+   map_public: yes
+   resource_tags:
+     Name: "{{ subnet_name }}"
+  register: subnet
+- name: create IGW
+  ec2_vpc_igw:
+   vpc_id: "{{ vpc_id }}"
+   region: "{{ region }}"
+   state: "present"
+   tags:
+     Name: "{{ igw_name }}"
+  register: igw
+
+- name: Route IGW
+   ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    subnets:
+      - "{{ subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id  }}"
+    tags:
+      Name: "{{ route_name }}"
+
+- name: Create Security Group
+   ec2_group:
+    name: Web DMZ
+    description: DMZ Security Group
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    rules:
+      - proto: tcp
+        ports:
+        - 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: 0.0.0.0/0
+   register: security_group
