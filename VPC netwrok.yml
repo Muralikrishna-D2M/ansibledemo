@@ -12,11 +12,15 @@
         module: ec2_vpc_net
         this: works
       tenancy: default
-    register: vpc
+    register: myvpc
+
+  - name: Create variable for VPC ID
+    set_fact:
+      vpc_id: "{{ myvpc.vpc.id }}"
   - name: associate subnet to the VPC
     ec2_vpc_subnet:
       state: present
-      vpc_id: "{{ vpc.vpc_id }}"
+      vpc_id: "{{ vpc_id }}"
       region: "{{ region }}"
       cidr: "{{ subnet_cidr }}"
       map_public: yes
@@ -25,7 +29,7 @@
     register: subnet
   - name: create IGW
     ec2_vpc_igw:
-      vpc_id: "{{ vpc.vpc_id }}"
+      vpc_id: "{{ vpc_id }}"
       region: "{{ region }}"
       state: "present"
       tags:
@@ -34,7 +38,7 @@
 
   - name: Route IGW
     ec2_vpc_route_table:
-      vpc_id: "{{ vpc.vpc_id }}"
+      vpc_id: "{{ vpc_id }}"
       region: "{{ region }}"
       subnets:
         - "{{ subnet.subnet_id }}"
