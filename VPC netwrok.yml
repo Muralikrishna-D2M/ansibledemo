@@ -17,7 +17,7 @@
 - name: associate subnet to the VPC
   ec2_vpc_subnet:
    state: present
-   vpc_id: "{{ vpc.vpc_id }}"
+   vpc_id: "{{ vpc.id }}"
    region: "{{ region }}"
    cidr: "{{ subnet_cidr }}"
    map_public: yes
@@ -26,7 +26,7 @@
   register: subnet
 - name: create IGW
   ec2_vpc_igw:
-   vpc_id: "{{ vpc.vpc_id }}"
+   vpc_id: "{{ vpc.id }}"
    region: "{{ region }}"
    state: "present"
    tags:
@@ -34,11 +34,11 @@
   register: igw
 
 - name: Route IGW
-   ec2_vpc_route_table:
-    vpc_id: "{{ vpc.vpc_id }}"
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.id }}"
     region: "{{ region }}"
     subnets:
-      - "{{ subnet.subnet.id }}"
+      - "{{ subnet.id }}"
     routes:
       - dest: 0.0.0.0/0
         gateway_id: "{{ igw.gateway_id  }}"
@@ -49,7 +49,7 @@
    ec2_group:
     name: Web DMZ
     description: DMZ Security Group
-    vpc_id: "{{ vpc.vpc_id }}"
+    vpc_id: "{{ vpc.id }}"
     region: "{{ region }}"
     rules:
       - proto: tcp
