@@ -16,7 +16,7 @@
   - name: associate subnet to the VPC
     ec2_vpc_subnet:
       state: present
-      vpc_id: "{{ vpc.id }}"
+      vpc_id: "{{ vpc.vpc_id }}"
       region: "{{ region }}"
       cidr: "{{ subnet_cidr }}"
       map_public: yes
@@ -25,7 +25,7 @@
     register: subnet
   - name: create IGW
     ec2_vpc_igw:
-      vpc_id: "{{ vpc.id }}"
+      vpc_id: "{{ vpc.vpc_id }}"
       region: "{{ region }}"
       state: "present"
       tags:
@@ -34,10 +34,10 @@
 
   - name: Route IGW
     ec2_vpc_route_table:
-      vpc_id: "{{ vpc.id }}"
+      vpc_id: "{{ vpc.vpc_id }}"
       region: "{{ region }}"
       subnets:
-        - "{{ subnet.id }}"
+        - "{{ subnet.subnet_id }}"
       routes:
         - dest: 0.0.0.0/0
           gateway_id: "{{ igw.gateway_id  }}"
