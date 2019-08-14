@@ -46,7 +46,7 @@
       Name: "{{ route_name }}"
 
 - name: Create Security Group
-   ec2_group:
+  ec2_group:
     name: Web DMZ
     description: DMZ Security Group
     vpc_id: "{{ vpc.id }}"
@@ -60,4 +60,4 @@
         ports:
         - 22
         cidr_ip: 0.0.0.0/0
-   register: security_group
+  register: security_group
