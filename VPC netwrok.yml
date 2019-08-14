@@ -13,11 +13,11 @@
       module: ec2_vpc_net
       this: works
     tenancy: default
-
+  register: vpc
 - name: associate subnet to the VPC
   ec2_vpc_subnet:
    state: present
-   vpc_id: "{{ vpc_id }}"
+   vpc_id: "{{ vpc.vpc_id }}"
    region: "{{ region }}"
    cidr: "{{ subnet_cidr }}"
    map_public: yes
@@ -26,7 +26,7 @@
   register: subnet
 - name: create IGW
   ec2_vpc_igw:
-   vpc_id: "{{ vpc_id }}"
+   vpc_id: "{{ vpc.vpc_id }}"
    region: "{{ region }}"
    state: "present"
    tags:
@@ -35,7 +35,7 @@
 
 - name: Route IGW
    ec2_vpc_route_table:
-    vpc_id: "{{ vpc_id }}"
+    vpc_id: "{{ vpc.vpc_id }}"
     region: "{{ region }}"
     subnets:
       - "{{ subnet.subnet.id }}"
@@ -49,10 +49,8 @@
    ec2_group:
     name: Web DMZ
     description: DMZ Security Group
-    vpc_id: "{{ vpc_id }}"
+    vpc_id: "{{ vpc.vpc_id }}"
     region: "{{ region }}"
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
     rules:
       - proto: tcp
         ports:
